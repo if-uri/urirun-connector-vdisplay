@@ -1,0 +1,23 @@
+{
+  "id": "vdisplay",
+  "name": "vDisplay",
+  "status": "available",
+  "category": "Environment",
+  "summary": "Enumerate windows and monitors (multi-backend, each with a natural-language description) and diagnose the display session through vdisplay:// routes — the environment-perception layer a resolve-first control plane composes.",
+  "description": "vdisplay is a cross-platform virtual-display and window/monitor orchestration package. This connector exposes its programmatic enumeration as first-class vdisplay:// URI routes so a urirun node, flow, or readiness kernel can consume the environment state instead of re-deriving it ad hoc. Windows and monitors carry an nl field (a natural-language description of what they contain); window enumeration uses vdisplay's best available backend for the live session, so it can see application windows (including Chrome on GNOME-Wayland) where a single AT-SPI/X11 probe cannot. Read-only queries run in-process; vdisplay is imported lazily so the connector stays light.",
+  "useCases": [
+    "Give a readiness kernel a trustworthy window list (unambiguous focus owner) before any input.",
+    "Resolve a window by title so a plan targets a specific window, not whatever holds focus.",
+    "List monitors/outputs with geometry and nl descriptions for capture/coordinate mapping.",
+    "Diagnose which enumeration backend is live so the planner knows if the window signal is reliable."
+  ],
+  "flowExample": [
+    "vdisplay://host/diagnose/query/report",
+    "vdisplay://host/windows/query/list",
+    "vdisplay://host/window/query/find"
+  ],
+  "requires": [
+    "python>=3.10",
+    "vdisplay>=0.1.0"
+  ]
+}

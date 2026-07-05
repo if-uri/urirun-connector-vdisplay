@@ -1,0 +1,12 @@
+README.md
+pyproject.toml
+tests/test_vdisplay.py
+urirun_connector_vdisplay/__init__.py
+urirun_connector_vdisplay/connector.manifest.json
+urirun_connector_vdisplay/core.py
+urirun_connector_vdisplay.egg-info/PKG-INFO
+urirun_connector_vdisplay.egg-info/SOURCES.txt
+urirun_connector_vdisplay.egg-info/dependency_links.txt
+urirun_connector_vdisplay.egg-info/entry_points.txt
+urirun_connector_vdisplay.egg-info/requires.txt
+urirun_connector_vdisplay.egg-info/top_level.txt

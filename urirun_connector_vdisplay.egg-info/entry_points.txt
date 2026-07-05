@@ -1,0 +1,5 @@
+[console_scripts]
+urirun-vdisplay = urirun_connector_vdisplay.core:main
+
+[urirun.bindings]
+vdisplay = urirun_connector_vdisplay.core:urirun_bindings

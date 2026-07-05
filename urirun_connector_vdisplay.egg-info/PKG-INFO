@@ -1,0 +1,16 @@
+Metadata-Version: 2.4
+Name: urirun-connector-vdisplay
+Version: 0.1.0
+Summary: Native vdisplay:// URI surface over the vdisplay package (windows/monitors/session enumeration with nl) for ifuri and urirun
+Author: Tom Sapletta
+License: Apache-2.0
+Requires-Python: >=3.10
+Description-Content-Type: text/markdown
+Requires-Dist: urirun>=0.4.14
+Requires-Dist: vdisplay>=0.1.0
+
+# urirun-connector-vdisplay
+
+Native `vdisplay://` URI surface over the [vdisplay](../../wronai/vdisplay) package: windows/monitors/session enumeration (multi-backend, each with an `nl` description) and display diagnosis, so a urirun node / flow / readiness kernel can consume the environment state instead of re-deriving it ad hoc.
+
+See `../urirun/docs/RESOLVE_FIRST_CONTROL_PLANE.md`.
