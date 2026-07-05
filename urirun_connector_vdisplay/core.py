@@ -45,13 +45,26 @@ def _discovery() -> Any:
     return discovery
 
 
+def _wayland_native_enumerable() -> bool:
+    """Can Wayland-NATIVE app windows (Chrome/Firefox on GNOME-Wayland) be enumerated at all?
+    Only via org.gnome.Shell.Eval, which modern GNOME disables by default (security). When it
+    is off, NO tool (x11/xdotool, atspi) sees Wayland-native windows — an OS-level limit, not a
+    vdisplay bug. This flag tells a resolver whether the window list can be TRUSTED as complete."""
+    try:
+        from vdisplay.windows.gnome_shell import list_gnome_meta_windows
+        return bool(list_gnome_meta_windows().get("ok"))
+    except Exception:  # noqa: BLE001
+        return False
+
+
 @conn.handler("windows/query/list", isolated=False,
-              meta={"label": "List windows (multi-backend, each with an nl description)"})
+              meta={"label": "List windows (each with nl); honest about Wayland-native visibility"})
 def windows_list(display: str = "", apps_only: bool = False, match_app: str = "",
                  min_width: int = 0, min_height: int = 0) -> dict[str, Any]:
-    """Enumerate windows via vdisplay's best backend for the live session. Unlike a single
-    atspi/X11 probe this sees app windows (incl. Chrome on Wayland) and tags each with
-    ``nl`` — the grounding a resolver needs to pick an unambiguous window."""
+    """Enumerate windows and tag each with ``nl``. HONEST capability reporting: on GNOME-Wayland
+    the X11 backend sees only XWayland clients, and the gnome-shell backend needs Eval (usually
+    disabled) — so ``wayland_native_visible=false`` means Wayland-native app windows (a
+    Wayland Chrome/Firefox) are NOT in this list and a resolver must not treat it as complete."""
     try:
         d = _discovery()
         wins = d.list_windows(
@@ -62,8 +75,11 @@ def windows_list(display: str = "", apps_only: bool = False, match_app: str = ""
         resolved = d.resolve_host_display(display or None)
     except Exception as exc:  # noqa: BLE001
         return _fail(str(exc), "vdisplay-windows")
+    wl_visible = _wayland_native_enumerable()
     return _ok(action="vdisplay-windows", resolved_display=resolved,
-               window_count=len(wins), windows=wins)
+               window_count=len(wins), windows=wins,
+               window_source="gnome_shell" if wl_visible else "x11",
+               wayland_native_visible=wl_visible)
 
 
 @conn.handler("monitors/query/list", isolated=False,
