@@ -54,3 +54,19 @@ def test_windows_list_returns_envelope():
     assert "ok" in r
     if r["ok"]:
         assert "windows" in r
+
+
+def test_enumeration_does_not_pull_playwright():
+    # The heavy-dep guard that matters in practice: CALLING windows_list must not import
+    # playwright (payloads.windows_payload does; discovery.list_windows must not). This is
+    # what keeps the connector deployable to a node without a browser engine.
+    import subprocess
+    import sys
+
+    code = (
+        "from urirun_connector_vdisplay import windows_list, monitors_list;"
+        "windows_list(); monitors_list();"
+        "import sys; print('PW' if 'playwright' in sys.modules else 'NOPW')"
+    )
+    out = subprocess.run([sys.executable, "-c", code], capture_output=True, text=True)
+    assert out.stdout.strip().endswith("NOPW"), f"enumeration pulled playwright: {out.stdout}"

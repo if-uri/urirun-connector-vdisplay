@@ -36,10 +36,13 @@ def _fail(msg: str, action: str) -> dict[str, Any]:
     return urirun.fail(msg, connector=CONNECTOR_ID, action=action)
 
 
-def _payloads() -> Any:
-    """Lazy accessor — keeps vdisplay (and its optional heavy deps) off the import path."""
-    from vdisplay import payloads
-    return payloads
+def _discovery() -> Any:
+    """Lazy accessor for the LIGHT enumeration path. Deliberately ``discovery`` (not
+    ``payloads``): payloads.windows_payload pulls playwright via its nl/session enrichment,
+    while discovery.list_windows/list_monitors return the same nl-tagged records WITHOUT it —
+    so the connector (and node) never load a browser engine just to list windows."""
+    from vdisplay import discovery
+    return discovery
 
 
 @conn.handler("windows/query/list", isolated=False,
@@ -50,25 +53,30 @@ def windows_list(display: str = "", apps_only: bool = False, match_app: str = ""
     atspi/X11 probe this sees app windows (incl. Chrome on Wayland) and tags each with
     ``nl`` — the grounding a resolver needs to pick an unambiguous window."""
     try:
-        pay = _payloads().windows_payload(
-            display or None, include_all=True,
-            apps_only=apps_only or None,
+        d = _discovery()
+        wins = d.list_windows(
+            display or None, apps_only=bool(apps_only),
             min_width=int(min_width), min_height=int(min_height),
             match_app=match_app or None,
         )
+        resolved = d.resolve_host_display(display or None)
     except Exception as exc:  # noqa: BLE001
         return _fail(str(exc), "vdisplay-windows")
-    return _ok(action="vdisplay-windows", **pay)
+    return _ok(action="vdisplay-windows", resolved_display=resolved,
+               window_count=len(wins), windows=wins)
 
 
 @conn.handler("monitors/query/list", isolated=False,
               meta={"label": "List monitors/outputs (geometry + nl description)"})
 def monitors_list(display: str = "") -> dict[str, Any]:
     try:
-        pay = _payloads().monitors_payload(display or None, include_all=True)
+        d = _discovery()
+        mons = d.list_monitors(display or None)
+        resolved = d.resolve_host_display(display or None)
     except Exception as exc:  # noqa: BLE001
         return _fail(str(exc), "vdisplay-monitors")
-    return _ok(action="vdisplay-monitors", **pay)
+    return _ok(action="vdisplay-monitors", resolved_display=resolved,
+               monitor_count=len(mons), monitors=mons)
 
 
 @conn.handler("window/query/find", isolated=False,
